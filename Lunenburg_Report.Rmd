@@ -12,33 +12,38 @@ knitr::opts_chunk$set(echo = FALSE, dpi = 600)
 ```
 
 ```{r, echo=FALSE, message=FALSE}
+library(dplyr)
 library(knitr)
-library(lubridate)
-library(sf)
 library(ggplot2)
 library(ggsflabel)
 library(ggspatial)
+library(readr)
+library(sf)
 library(strings)
-library(dplyr)
+library(viridis)
 ```
 
- 
+
 ```{r}
 
-county <- "Guysborough"
+county <- "Lunenburg"
 
-path <- file.path("Y:/Coastal Monitoring Program/Open Data/Guysborough/data/compile")
+path <- file.path(paste("Y:/Coastal Monitoring Program/Open Data/", county, "/data/compile", sep = ""))
 
-dat1 <- readRDS(paste(path, "/Guysborough_20200903.rds", sep = "")) 
-dat2 <- readRDS(paste(path, "/Guysborough_20201013.rds", sep = "")) 
+# import the csv file and export as rds (which is faster to read in)
+# comment this out after the first export
+# dat <- read_csv(paste(path, "/Lunenburg_20201013.csv", sep = ""))
+# saveRDS(dat, file = paste(path, "Lunenburg_20201013.rds", sep = "/"))
 
-dat <- rbind(dat1, dat2) 
+dat <- readRDS(paste(path, "/Lunenburg_20201013.rds", sep = "")) 
+
 
 waterbodies <- unique(dat$WATERBODY)
 n_waterbodies <- length(waterbodies)
 
 fig.caption <- "Oceanographic variables measured at "
 table.caption <- "Deployment details for "
+
 
 i = 0 # counter for waterbody
 k = 1 # counter for figure number
@@ -106,8 +111,6 @@ k = k+1
 ```{r, message=FALSE, error=FALSE, warning=FALSE, fig.width=8}
 count.map <- NS %>% filter(COL.COUNTY == 1)
 bb_count <- st_bbox(count.map)
-bb_count[3] <- -58
-
 NS_count <- st_crop(NS, bb_count)
 
 
@@ -123,7 +126,7 @@ ggplot() +
   annotation_north_arrow(location = "tl", which_north = "true",
                           height = unit(1, "cm"),
                          width = unit(1, "cm")) +
-  fixed_plot_aspect(ratio = 2) +
+  fixed_plot_aspect(ratio = 1.7) +
   theme(text=element_text(size=12),
         axis.title = element_blank())
 
@@ -147,7 +150,6 @@ CMAR collects temperature, dissolved oxygen, and intermittent salinity data usin
 
 The data presented here have been quality controlled and some data were excluded from the reported dataset due to known errors and explainable outliers.
 
-
 ![](Sensor_String.jpg)
 
 Figure `r k`: Example sensor string configuration (not to scale).
@@ -155,7 +157,7 @@ Figure `r k`: Example sensor string configuration (not to scale).
 
 # `r county` County Coastal Data
 
-Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. A red line is included in temperature figures to indicate the -0.7°c freeze threshold for salmonids (for figures where the temperature falls below this threshold).
+Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. A red line is included in temperature figures to indicate the -0.7°C freeze threshold for salmonids (for figures where the temperature falls below this threshold).
 
 
 ```{r, fig.width = 8.5, fig.height = 5, results = 'hide',  results ='asis', message=FALSE}
@@ -166,7 +168,6 @@ for(i in 1:n_waterbodies){
   waterbody_dat <- dat %>% filter(WATERBODY == waterbody_name)
 
   stations <- unique(waterbody_dat$STATION)
-
 
   cat('\n##', waterbody_name, '\n')
 
@@ -195,9 +196,18 @@ for(i in 1:n_waterbodies){
     timespan <- unclass(timespan)[1]
     axis_breaks <- get_xaxis_breaks(timespan)
 
+    # set colour palette
+    n.depth <- length(unique(station_dat$DEPTH))
+    if(n.depth > 6){
+      color.palette <- viridis(n.depth, direction = -1)
+    } else{
+      color.palette <- rev(viridis(6, option = "D"))
+    }
+
     print(
       plot_variables_at_depth(station_dat,
-                             # plot.title = station.j,
+                              # plot.title = station.j,
+                              color.palette = color.palette,
                               vars.to.plot = unique(station_dat$VARIABLE),
                               date.breaks.major = axis_breaks$date.breaks.major,
                               date.breaks.minor = axis_breaks$date.breaks.minor,
