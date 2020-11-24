@@ -4,6 +4,9 @@ output:
     reference_docx: CMAR_report_template.docx
     toc: true
     toc_depth: 3
+params: 
+  county: county 
+  doc.hist: doc.hist
 ---
 
 ```{r setup, include=FALSE}
@@ -14,25 +17,30 @@ knitr::opts_chunk$set(echo = FALSE, dpi = 600)
 ```{r, echo=FALSE, message=FALSE}
 library(knitr)
 library(lubridate)
+library(purrr)
 library(sf)
 library(ggplot2)
 library(ggsflabel)
 library(ggspatial)
 library(strings)
 library(dplyr)
+library(viridis)
 ```
 
  
 ```{r}
 
-county <- "Guysborough"
+county <- params$county
+#county <- "Yarmouth"
+# path to the folder with the data to be included in the report
+path <- paste("Y:/Coastal Monitoring Program/Open Data", county, "final/rds", sep = "/")
 
-path <- file.path("Y:/Coastal Monitoring Program/Open Data/Guysborough/data/compile")
+# read all rds files and rbind together
+dat <- list.files(path, full.names = TRUE, pattern = ".rds") %>%
+  map_dfr(readRDS)
 
-dat1 <- readRDS(paste(path, "/Guysborough_20200903.rds", sep = "")) 
-dat2 <- readRDS(paste(path, "/Guysborough_20201013.rds", sep = "")) 
-
-dat <- rbind(dat1, dat2) 
+dat <- dat %>% 
+  filter(STATION != "Old Point Channel", STATION != "Tucker Island")
 
 waterbodies <- unique(dat$WATERBODY)
 n_waterbodies <- length(waterbodies)
@@ -49,25 +57,25 @@ text.size <- 2
 ```{r}
 # set up map params
 
-# path to NS counties shapefile
-path.shp <- file.path("Y:/Projects/Datasets/Merged_NS_Counties")
-
-# import NS counties shapefile and remove NA row (should have 18 rows - 1 for each county)
-NS_raw <- read_sf(paste(path.shp, "Merged_Counties2.shp", sep = "/")) %>%
-  na.omit()
-
-# add column with "1" for county of interest and "0" for other counties
-NS <- NS_raw %>%
-  mutate(COL.COUNTY = if_else(County == county, 1, 0)) %>%
-  mutate(COL.COUNTY = ordered(factor(COL.COUNTY), levels = c(1, 0)))
-
-# extract unique station locations and convert to sf object
-stations <- dat %>%
-  write_report_table(keep.waterbody = TRUE) %>%
-  select(Waterbody, Station, Latitude, Longitude) %>%
-  distinct(Station, .keep_all = TRUE) %>%
-  st_as_sf(coords = c("Longitude", "Latitude"), remove = FALSE,
-           crs = 4326, agr = "constant")
+# # path to NS counties shapefile
+# path.shp <- file.path("Y:/Projects/Datasets/Merged_NS_Counties")
+# 
+# # import NS counties shapefile and remove NA row (should have 18 rows - 1 for each county)
+# NS_raw <- read_sf(paste(path.shp, "Merged_Counties2.shp", sep = "/")) %>%
+#   na.omit()
+# 
+# # add column with "1" for county of interest and "0" for other counties
+# NS <- NS_raw %>%
+#   mutate(COL.COUNTY = if_else(County == county, 1, 0)) %>%
+#   mutate(COL.COUNTY = ordered(factor(COL.COUNTY), levels = c(1, 0)))
+# 
+# # extract unique station locations and convert to sf object
+# stations <- dat %>%
+#   write_report_table(keep.waterbody = TRUE) %>%
+#   select(Waterbody, Station, Latitude, Longitude) %>%
+#   distinct(Station, .keep_all = TRUE) %>%
+#   st_as_sf(coords = c("Longitude", "Latitude"), remove = FALSE,
+#            crs = 4326, agr = "constant")
 
 ```
 
@@ -84,15 +92,15 @@ This document should be considered as a guide only, as data collection and retri
 
 ```{r, message=FALSE, error=FALSE, fig.width=8}
 
-ggplot() +
-  geom_sf(data = NS, col = NA, fill = NA) +
-  annotation_map_tile(type="cartolight", zoomin = 0) +
-  geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
-  scale_fill_manual(values = c("#1B9E77", NA)) +
-  fixed_plot_aspect(ratio = 2)+
-  theme(text=element_text(size = 12),
-        axis.title = element_blank()) +
-  theme(legend.position = "none")
+# ggplot() +
+#   geom_sf(data = NS, col = NA, fill = NA) +
+#   annotation_map_tile(type="cartolight", zoomin = 0) +
+#   geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
+#   scale_fill_manual(values = c("#1B9E77", NA)) +
+#   fixed_plot_aspect(ratio = 2)+
+#   theme(text=element_text(size = 12),
+#         axis.title = element_blank()) +
+#   theme(legend.position = "none")
 
 ```
 
@@ -104,28 +112,28 @@ k = k+1
 
 
 ```{r, message=FALSE, error=FALSE, warning=FALSE, fig.width=8}
-count.map <- NS %>% filter(COL.COUNTY == 1)
-bb_count <- st_bbox(count.map)
-bb_count[3] <- -58
-
-NS_count <- st_crop(NS, bb_count)
-
-
-set.seed(12)
-ggplot() +
-  geom_sf(data = NS_count, fill= NA) +
-  annotation_map_tile(type="cartolight", zoomin = 0) +
-  geom_sf(data = stations) +
-  geom_sf_label_repel(data = stations, aes(label = Station),
-                      label.size = NA,
-                      fill = NA, size = text.size) +
-  annotation_scale(location = "br") +
-  annotation_north_arrow(location = "tl", which_north = "true",
-                          height = unit(1, "cm"),
-                         width = unit(1, "cm")) +
-  fixed_plot_aspect(ratio = 2) +
-  theme(text=element_text(size=12),
-        axis.title = element_blank())
+# count.map <- NS %>% filter(COL.COUNTY == 1)
+# bb_count <- st_bbox(count.map)
+# bb_count[3] <- -58
+# 
+# NS_count <- st_crop(NS, bb_count)
+# 
+# 
+# set.seed(12)
+# ggplot() +
+#   geom_sf(data = NS_count, fill= NA) +
+#   annotation_map_tile(type="cartolight", zoomin = 0) +
+#   geom_sf(data = stations) +
+#   geom_sf_label_repel(data = stations, aes(label = Station),
+#                       label.size = NA,
+#                       fill = NA, size = text.size) +
+#   annotation_scale(location = "br") +
+#   annotation_north_arrow(location = "tl", which_north = "true",
+#                           height = unit(1, "cm"),
+#                          width = unit(1, "cm")) +
+#   fixed_plot_aspect(ratio = 2) +
+#   theme(text=element_text(size=12),
+#         axis.title = element_blank())
 
 ```
 <br>
@@ -187,17 +195,25 @@ for(i in 1:n_waterbodies){
 
     # subset data to station of interest
     station_dat <- waterbody_dat %>% filter(STATION == station.j)%>%
-      convert_depth_to_ordered_factor() #%>%
-     #filter(VALUE < 125)
+      convert_depth_to_ordered_factor() 
 
     # calculate timespan of deployments and adjust x-axis
     timespan <- difftime(max(station_dat$TIMESTAMP), min(station_dat$TIMESTAMP), units = "days")
     timespan <- unclass(timespan)[1]
     axis_breaks <- get_xaxis_breaks(timespan)
+    
+    # set colour palette
+    n.depth <- length(unique(station_dat$DEPTH))
+    if(n.depth > 6){
+      color.palette <- viridis(n.depth, direction = -1)
+    } else{
+      color.palette <- rev(viridis(6, option = "D"))
+    }
 
     print(
       plot_variables_at_depth(station_dat,
                              # plot.title = station.j,
+                              color.palette = color.palette,
                               vars.to.plot = unique(station_dat$VARIABLE),
                               date.breaks.major = axis_breaks$date.breaks.major,
                               date.breaks.minor = axis_breaks$date.breaks.minor,
@@ -218,16 +234,7 @@ for(i in 1:n_waterbodies){
 ```{r}
 i = i +1
 
-doc.version <- 1
-doc.date <- Sys.Date()
-doc.reason <- "New document"
-
-version <- data.frame(Version.Number = doc.version,
-                     Date = doc.date,
-                     Amendments = doc.reason) %>%
-  rename(`Version Number` = Version.Number)
-
-kable(version, align = "c",
+kable(params$doc.hist, align = "c",
          caption = paste("Table ", i, ": Document history.", sep = ""))
 
 ```
