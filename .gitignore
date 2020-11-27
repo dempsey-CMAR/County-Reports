@@ -5,6 +5,7 @@
 *.docx
 
 final/
+drafts/
 rosm.cache/
 
 old/

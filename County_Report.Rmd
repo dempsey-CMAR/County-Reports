@@ -57,25 +57,25 @@ text.size <- 2
 ```{r}
 # set up map params
 
-# # path to NS counties shapefile
-# path.shp <- file.path("Y:/Projects/Datasets/Merged_NS_Counties")
-# 
-# # import NS counties shapefile and remove NA row (should have 18 rows - 1 for each county)
-# NS_raw <- read_sf(paste(path.shp, "Merged_Counties2.shp", sep = "/")) %>%
-#   na.omit()
-# 
-# # add column with "1" for county of interest and "0" for other counties
-# NS <- NS_raw %>%
-#   mutate(COL.COUNTY = if_else(County == county, 1, 0)) %>%
-#   mutate(COL.COUNTY = ordered(factor(COL.COUNTY), levels = c(1, 0)))
-# 
-# # extract unique station locations and convert to sf object
-# stations <- dat %>%
-#   write_report_table(keep.waterbody = TRUE) %>%
-#   select(Waterbody, Station, Latitude, Longitude) %>%
-#   distinct(Station, .keep_all = TRUE) %>%
-#   st_as_sf(coords = c("Longitude", "Latitude"), remove = FALSE,
-#            crs = 4326, agr = "constant")
+# path to NS counties shapefile
+path.shp <- file.path("Y:/Projects/Datasets/Merged_NS_Counties")
+
+# import NS counties shapefile and remove NA row (should have 18 rows - 1 for each county)
+NS_raw <- read_sf(paste(path.shp, "Merged_Counties2.shp", sep = "/")) %>%
+  na.omit()
+
+# add column with "1" for county of interest and "0" for other counties
+NS <- NS_raw %>%
+  mutate(COL.COUNTY = if_else(County == county, 1, 0)) %>%
+  mutate(COL.COUNTY = ordered(factor(COL.COUNTY), levels = c(1, 0)))
+
+# extract unique station locations and convert to sf object
+stations <- dat %>%
+  write_report_table(keep.waterbody = TRUE) %>%
+  select(Waterbody, Station, Latitude, Longitude) %>%
+  distinct(Station, .keep_all = TRUE) %>%
+  st_as_sf(coords = c("Longitude", "Latitude"), remove = FALSE,
+           crs = 4326, agr = "constant")
 
 ```
 
@@ -92,15 +92,15 @@ This document should be considered as a guide only, as data collection and retri
 
 ```{r, message=FALSE, error=FALSE, fig.width=8}
 
-# ggplot() +
-#   geom_sf(data = NS, col = NA, fill = NA) +
-#   annotation_map_tile(type="cartolight", zoomin = 0) +
-#   geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
-#   scale_fill_manual(values = c("#1B9E77", NA)) +
-#   fixed_plot_aspect(ratio = 2)+
-#   theme(text=element_text(size = 12),
-#         axis.title = element_blank()) +
-#   theme(legend.position = "none")
+ggplot() +
+  geom_sf(data = NS, col = NA, fill = NA) +
+  annotation_map_tile(type="cartolight", zoomin = 0) +
+  geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
+  scale_fill_manual(values = c("#1B9E77", NA)) +
+  fixed_plot_aspect(ratio = 2)+
+  theme(text=element_text(size = 12),
+        axis.title = element_blank()) +
+  theme(legend.position = "none")
 
 ```
 
@@ -112,28 +112,30 @@ k = k+1
 
 
 ```{r, message=FALSE, error=FALSE, warning=FALSE, fig.width=8}
-# count.map <- NS %>% filter(COL.COUNTY == 1)
-# bb_count <- st_bbox(count.map)
-# bb_count[3] <- -58
-# 
-# NS_count <- st_crop(NS, bb_count)
-# 
-# 
-# set.seed(12)
-# ggplot() +
-#   geom_sf(data = NS_count, fill= NA) +
-#   annotation_map_tile(type="cartolight", zoomin = 0) +
-#   geom_sf(data = stations) +
-#   geom_sf_label_repel(data = stations, aes(label = Station),
-#                       label.size = NA,
-#                       fill = NA, size = text.size) +
-#   annotation_scale(location = "br") +
-#   annotation_north_arrow(location = "tl", which_north = "true",
-#                           height = unit(1, "cm"),
-#                          width = unit(1, "cm")) +
-#   fixed_plot_aspect(ratio = 2) +
-#   theme(text=element_text(size=12),
-#         axis.title = element_blank())
+count.map <- NS %>% filter(COL.COUNTY == 1)
+bb_count <- st_bbox(count.map)
+
+# tailor the bounding box for each county if required
+if(county == "Guyborough") bb_count[3] <- -58
+if(county == "Halifax") bb_count[3] <- -62
+
+NS_count <- st_crop(NS, bb_count)
+
+set.seed(12)
+ggplot() +
+  geom_sf(data = NS_count, fill= NA) +
+  annotation_map_tile(type="cartolight", zoomin = 0) +
+  geom_sf(data = stations) +
+  geom_sf_label_repel(data = stations, aes(label = Station),
+                      label.size = NA,
+                      fill = NA, size = text.size) +
+  annotation_scale(location = "br") +
+  annotation_north_arrow(location = "tl", which_north = "true",
+                          height = unit(1, "cm"),
+                         width = unit(1, "cm")) +
+  fixed_plot_aspect(ratio = 2) +
+  theme(text=element_text(size=12),
+        axis.title = element_blank())
 
 ```
 <br>
@@ -143,8 +145,6 @@ Figure `r k`: Sensor string sampling stations in `r county` County.
 ```{r}
 k = k+1
 ```
-
-
 
 
 ## Data Collection 
