@@ -39,18 +39,19 @@ path <- paste("Y:/Coastal Monitoring Program/Open Data", county, "final/rds", se
 dat <- list.files(path, full.names = TRUE, pattern = ".rds") %>%
   map_dfr(readRDS)
 
-dat <- dat %>% 
-  filter(STATION != "Old Point Channel", STATION != "Tucker Island")
+#waterbodies <- unique(dat$WATERBODY) 
+waterbodies <-  dat %>% select(WATERBODY) %>% distinct() %>% arrange(WATERBODY)
+waterbodies <- waterbodies$WATERBODY
 
-waterbodies <- unique(dat$WATERBODY)
-n_waterbodies <- length(waterbodies)
-
-fig.caption <- "Oceanographic variables measured at "
+fig.caption <- " oceanographic data."
 table.caption <- "Deployment details for "
+
+custom_DO_lims <- c("Aberdeen", "Piper Lake") # stations that have DO below the default range of plot_variables_at_depth
+qual_depths <- c("Pulp Mill", "Tucker Island") # stations with qualitative depths
 
 i = 0 # counter for waterbody
 k = 1 # counter for figure number
-text.size <- 2
+text.size <- 3
 
 ```
 
@@ -82,11 +83,11 @@ stations <- dat %>%
 
 # Introduction
 
-The Centre for Marine Applied Research (CMAR) measures environmental parameters throughout Nova Scotia's coastal waters under the Coastal Monitoring Program. This program supports science-based data collection to inform coastal ocean users and was originally implemented by the Nova Scotia Department of Fisheries and Aquaculture in 2012.
+The Centre for Marine Applied Research (CMAR) measures environmental data throughout Nova Scotia’s coastal waters as part of the Coastal Monitoring Program. This program was initiated by the Nova Scotia Department of Fisheries and Aquaculture in 2012 and CMAR became involved in 2017. 
 
 This document presents deployment details and summary figures of program data collected for **`r county` County** (Figure `r k` and Figure `r k+1`).
 
-The data are available for download from the Nova Scotia [Open Data Portal](https://data.novascotia.ca/). For more information on CMAR and the Coastal Monitoring Program, visit the [CMAR website](https://cmar.ca/).
+The data are available for download from the Nova Scotia [Open Data Portal](https://data.novascotia.ca/browse?tags=coastal+monitoring+program). For more information on CMAR and the Coastal Monitoring Program, visit the [CMAR website](https://cmar.ca/).
 
 This document should be considered as a guide only, as data collection and retrieval are ongoing. The information may be revised pending ongoing data collection and analyses. 
 
@@ -112,35 +113,46 @@ k = k+1
 
 
 ```{r, message=FALSE, error=FALSE, warning=FALSE, fig.width=8}
+
 count.map <- NS %>% filter(COL.COUNTY == 1)
 bb_count <- st_bbox(count.map)
+map_ratio <- 2
 
 # tailor the bounding box for each county if required
-if(county == "Guyborough") bb_count[3] <- -58
+if(county == "Guysborough") {
+  bb_count[3] <- -60
+  text.size <- 2.5 
+}
+
 if(county == "Halifax") bb_count[3] <- -62
 
 NS_count <- st_crop(NS, bb_count)
 
-set.seed(12)
-ggplot() +
+station_map <- ggplot() +
   geom_sf(data = NS_count, fill= NA) +
   annotation_map_tile(type="cartolight", zoomin = 0) +
   geom_sf(data = stations) +
   geom_sf_label_repel(data = stations, aes(label = Station),
                       label.size = NA,
-                      fill = NA, size = text.size) +
+                      fill = NA, size = text.size,
+                      max.overlaps = 30) +
   annotation_scale(location = "br") +
   annotation_north_arrow(location = "tl", which_north = "true",
-                          height = unit(1, "cm"),
+                         height = unit(1, "cm"),
                          width = unit(1, "cm")) +
-  fixed_plot_aspect(ratio = 2) +
   theme(text=element_text(size=12),
         axis.title = element_blank())
 
-```
+if(county != "Guysborough") station_map <- station_map + fixed_plot_aspect(ratio = map_ratio)
+
+station_map
+
+
+```	
 <br>
 
-Figure `r k`: Sensor string sampling stations in `r county` County.
+
+Figure `r k`: Sampling stations in `r county` County.
 
 ```{r}
 k = k+1
@@ -149,11 +161,11 @@ k = k+1
 
 ## Data Collection 
 
-CMAR collects temperature, dissolved oxygen, and intermittent salinity data using autonomous sensors attached to moored lines, called ‘sensor strings’. Each string is attached to the seafloor by an anchored acoustic release and suspended by a sub-surface buoy, with sensors attached at various depths (Figure `r k`). Strings are typically deployed for several months, and data are measured every 10 minutes to 1 hour depending on the sensor. This may produce tens- to hundreds- of thousands of observations for a single deployment. Data are retrieved by triggering the acoustic release, which enables the sensor string to float to the surface, where the data are downloaded. The string can be re-deployed at the same location or moved to another area of interest. 
+CMAR collects temperature, dissolved oxygen, and intermittent salinity data using autonomous sensors attached to moored lines, called ‘sensor strings’. Each string is attached to the seafloor by an anchored acoustic release and suspended by a sub-surface buoy, with sensors attached at various depths (Figure 3). Sensor strings are typically deployed for several months, and data are measured every 1 minute to 1 hour depending on the sensor. This process may produce tens- to hundreds- of thousands of observations for a single deployment. Data are retrieved by triggering an acoustic release, enabling the sensor string to float to the surface for data download. Sensor strings may be re-deployed at the same location or moved to another area of interest depending on program objectives.
 
 ## Data Processing
 
-The data presented here have been quality controlled and some data were excluded from the reported dataset due to known errors and explainable outliers.
+Some data were excluded from the dataset due to quality control processes.
 
 
 ![](Sensor_String.jpg)
@@ -163,18 +175,18 @@ Figure `r k`: Example sensor string configuration (not to scale).
 
 # `r county` County Coastal Data
 
-Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. A red line is included in temperature figures to indicate the -0.7°c freeze threshold for salmonids (for figures where the temperature falls below this threshold).
+Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. A red line is included in temperature figures to indicate the -0.7°C freeze threshold for salmonids (for figures where the temperature falls below this threshold). Note the different axis scales for each figure.
 
 
 ```{r, fig.width = 8.5, fig.height = 5, results = 'hide',  results ='asis', message=FALSE}
-for(i in 1:n_waterbodies){
-#for(i in 8){
+for(i in seq_along(waterbodies)){
 
   waterbody_name <- waterbodies[i]
   waterbody_dat <- dat %>% filter(WATERBODY == waterbody_name)
 
-  stations <- unique(waterbody_dat$STATION)
-
+  stations <-  waterbody_dat %>% select(STATION) %>% distinct() %>% arrange(STATION)
+  stations <- stations$STATION 
+  #  unique(waterbody_dat$STATION)
 
   cat('\n##', waterbody_name, '\n')
 
@@ -196,30 +208,48 @@ for(i in 1:n_waterbodies){
     # subset data to station of interest
     station_dat <- waterbody_dat %>% filter(STATION == station.j)%>%
       convert_depth_to_ordered_factor() 
-
-    # calculate timespan of deployments and adjust x-axis
-    timespan <- difftime(max(station_dat$TIMESTAMP), min(station_dat$TIMESTAMP), units = "days")
-    timespan <- unclass(timespan)[1]
-    axis_breaks <- get_xaxis_breaks(timespan)
+    
+    # order variables to plot alphabetically
+    vars <- station_dat %>%  
+      select(VARIABLE) %>% 
+      distinct() %>% 
+      mutate(VARIABLE = factor(VARIABLE),
+             VARIABLE = ordered(VARIABLE, 
+                                levels = c("Temperature", "Dissolved Oxygen", "Salinity"))) %>% 
+      arrange(VARIABLE)
+    vars <- vars$VARIABLE
     
     # set colour palette
-    n.depth <- length(unique(station_dat$DEPTH))
-    if(n.depth > 6){
-      color.palette <- viridis(n.depth, direction = -1)
-    } else{
-      color.palette <- rev(viridis(6, option = "D"))
-    }
-
+    color_pal <- get_colour_palette(station_dat)
+    
+    # get nice x-axis breaks
+    axis_breaks <- get_xaxis_breaks(station_dat)
+      
+    # y-limts for DO
+    if(station.j %in% custom_DO_lims){
+      standard_lims = FALSE
+    } else standard_lims = TRUE
+    
+    # legend name
+    if(station.j %in% qual_depths){
+      legend_lab = "Depth"
+    } else legend_lab = "Depth (m)"
+    
     print(
       plot_variables_at_depth(station_dat,
                              # plot.title = station.j,
-                              color.palette = color.palette,
-                              vars.to.plot = unique(station_dat$VARIABLE),
+                              vars.to.plot = vars,
+                              color.palette = color_pal,
+                              
                               date.breaks.major = axis_breaks$date.breaks.major,
                               date.breaks.minor = axis_breaks$date.breaks.minor,
-                              date.labels.format = axis_breaks$date.labels.format)
+                              date.labels.format = axis_breaks$date.labels.format,
+                              
+                              standard.DO.ylims = standard_lims,
+                              
+                              legend.name = legend_lab)
     )
-    cat(paste("Figure ", k, ": ", fig.caption, station.j, ".",  sep = ""), '\n')
+    cat(paste("Figure ", k, ": ", station.j, fig.caption,  sep = ""), '\n')
 
     cat('\n')
 
