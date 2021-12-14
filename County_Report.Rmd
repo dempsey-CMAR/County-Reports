@@ -11,7 +11,6 @@ params:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, dpi = 600)
-
 ```
 
 ```{r, echo=FALSE, message=FALSE}
@@ -22,76 +21,70 @@ library(sf)
 library(ggplot2)
 library(ggsflabel)
 library(ggspatial)
+library(here)
 library(strings)
 library(dplyr)
 library(viridis)
 ```
 
  
-```{r}
+```{r, import-strings-data}
 
 county <- params$county
-#county <- "Yarmouth"
-# path to the folder with the data to be included in the report
-path <- paste("Y:/Coastal Monitoring Program/Open Data", county, "final/rds", sep = "/")
 
-# read all rds files and rbind together
-dat <- list.files(path, full.names = TRUE, pattern = ".rds") %>%
-  map_dfr(readRDS)
+# read all rds files for county and rbind together
+dat <- suppressMessages(import_strings_data(county = county, add_county_col = FALSE))
 
-#waterbodies <- unique(dat$WATERBODY) 
+# distinct waterbodies
 waterbodies <-  dat %>% select(WATERBODY) %>% distinct() %>% arrange(WATERBODY)
 waterbodies <- waterbodies$WATERBODY
 
-fig.caption <- " oceanographic data."
+fig.caption <- " water quality data."
 table.caption <- "Deployment details for "
 
 custom_DO_lims <- c("Aberdeen", "Piper Lake") # stations that have DO below the default range of plot_variables_at_depth
-qual_depths <- c("Pulp Mill", "Tucker Island") # stations with qualitative depths
+#qual_depths <- c("Pulp Mill", "Tucker Island") # stations with qualitative depths
 
 i = 0 # counter for waterbody
 k = 1 # counter for figure number
 text.size <- 3
+crs <- 4326
 
 ```
 
-```{r}
-# set up map params
-
-# path to NS counties shapefile
-path.shp <- file.path("Y:/Projects/Datasets/Merged_NS_Counties")
+```{r, map-set-up}
 
 # import NS counties shapefile and remove NA row (should have 18 rows - 1 for each county)
-NS_raw <- read_sf(paste(path.shp, "Merged_Counties2.shp", sep = "/")) %>%
-  na.omit()
-
-# add column with "1" for county of interest and "0" for other counties
-NS <- NS_raw %>%
-  mutate(COL.COUNTY = if_else(County == county, 1, 0)) %>%
-  mutate(COL.COUNTY = ordered(factor(COL.COUNTY), levels = c(1, 0)))
+NS <- read_sf(here("shapefiles/Merged_Counties2.shp")) %>%
+  na.omit() %>% 
+  # add column with "1" for county of interest and "0" for other counties
+  mutate(
+    COL.COUNTY = if_else(County == county, 1, 0),
+    COL.COUNTY = ordered(factor(COL.COUNTY), levels = c(1, 0))
+  )
 
 # extract unique station locations and convert to sf object
 stations <- dat %>%
   write_report_table(keep.waterbody = TRUE) %>%
   select(Waterbody, Station, Latitude, Longitude) %>%
   distinct(Station, .keep_all = TRUE) %>%
-  st_as_sf(coords = c("Longitude", "Latitude"), remove = FALSE,
-           crs = 4326, agr = "constant")
+  st_as_sf(
+    coords = c("Longitude", "Latitude"), remove = FALSE,
+    crs = crs, agr = "constant"
+  )
 
 ```
 
 
 # Introduction
 
-The Centre for Marine Applied Research (CMAR) measures environmental data throughout Nova Scotia’s coastal waters as part of the Coastal Monitoring Program. This program was initiated by the Nova Scotia Department of Fisheries and Aquaculture in 2012 and CMAR became involved in 2017. 
+The Centre for Marine Applied Research (CMAR) measures [essential ocean variables](https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441) throughout Nova Scotia’s coastal waters as part of the Coastal Monitoring Program. This program was initiated by the Nova Scotia Department of Fisheries and Aquaculture in 2012 and CMAR became involved in 2017. For more information on CMAR and the Coastal Monitoring Program, visit the [CMAR website](https://cmar.ca/). 
 
-This document presents deployment details and summary figures of program data collected for **`r county` County** (Figure `r k` and Figure `r k+1`).
-
-The data are available for download from the Nova Scotia [Open Data Portal](https://data.novascotia.ca/browse?tags=coastal+monitoring+program). For more information on CMAR and the Coastal Monitoring Program, visit the [CMAR website](https://cmar.ca/).
+This document presents deployment details and summary figures of Water Quality data collected for **`r county` County** (Figure `r k` and Figure `r k+1`). The data are available for download from the Nova Scotia [Open Data Portal](https://data.novascotia.ca/browse?tags=coastal+monitoring+program) and from the ERDAPP server through the [Canadian Integrated Ocean Observing platform](https://catalogue.cioosatlantic.ca/dataset?q=cmar). 
 
 This document should be considered as a guide only, as data collection and retrieval are ongoing. The information may be revised pending ongoing data collection and analyses. 
 
-```{r, message=FALSE, error=FALSE, fig.width=8}
+```{r, NS-map, message=FALSE, error=FALSE, fig.width=8}
 
 ggplot() +
   geom_sf(data = NS, col = NA, fill = NA) +
@@ -112,7 +105,7 @@ k = k+1
 ```
 
 
-```{r, message=FALSE, error=FALSE, warning=FALSE, fig.width=8}
+```{r, couny-map, message=FALSE, error=FALSE, warning=FALSE, fig.width=8}
 
 count.map <- NS %>% filter(COL.COUNTY == 1)
 bb_count <- st_bbox(count.map)
@@ -161,7 +154,7 @@ k = k+1
 
 ## Data Collection 
 
-CMAR collects temperature, dissolved oxygen, and intermittent salinity data using autonomous sensors attached to moored lines, called ‘sensor strings’. Each string is attached to the seafloor by an anchored acoustic release and suspended by a sub-surface buoy, with sensors attached at various depths (Figure 3). Sensor strings are typically deployed for several months, and data are measured every 1 minute to 1 hour depending on the sensor. This process may produce tens- to hundreds- of thousands of observations for a single deployment. Data are retrieved by triggering an acoustic release, enabling the sensor string to float to the surface for data download. Sensor strings may be re-deployed at the same location or moved to another area of interest depending on program objectives.
+CMAR collects temperature, dissolved oxygen, and intermittent salinity data using autonomous sensors deployed on “sensor strings”. A sensor string typically consists of a line anchored to the sea floor by an acoustic release and suspended by a sub-surface buoy, with sensors attached at various depths below the surface (as measured at low tide; Figure 3). Alternatively, strings may be attached to surface moorings, including floating docks, buoys, and equipment. Sensor strings are typically deployed for several months, and data are measured every 1 minute to 1 hour. Sensors are retrieved for data offload by triggering the acoustic release when applicable, by directly removing from surface moorings, or occasionally by divers or dragging. Sensor strings may be re-deployed at the same location or moved to another area of interest depending on program objectives.
 
 ## Data Processing
 
@@ -170,15 +163,16 @@ Some data were excluded from the dataset due to quality control processes.
 
 ![](Sensor_String.jpg)
 
+
 Figure `r k`: Example sensor string configuration (not to scale).
 
 
 # `r county` County Coastal Data
 
-Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. A red line is included in temperature figures to indicate the -0.7°C freeze threshold for salmonids (for figures where the temperature falls below this threshold). Note the different axis scales for each figure.
+Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. A red line is included in temperature figures to indicate the -0.7° C superchill threshold for salmonids (for figures where the temperature falls below this threshold). Note the different axis scales for each figure.
 
 
-```{r, fig.width = 8.5, fig.height = 5, results = 'hide',  results ='asis', message=FALSE}
+```{r, report-body, fig.width = 8.5, fig.height = 5, results = 'hide',  results ='asis', message=FALSE}
 for(i in seq_along(waterbodies)){
 
   waterbody_name <- waterbodies[i]
@@ -186,7 +180,6 @@ for(i in seq_along(waterbodies)){
 
   stations <-  waterbody_dat %>% select(STATION) %>% distinct() %>% arrange(STATION)
   stations <- stations$STATION 
-  #  unique(waterbody_dat$STATION)
 
   cat('\n##', waterbody_name, '\n')
 

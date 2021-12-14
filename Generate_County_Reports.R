@@ -19,7 +19,7 @@ report <- "Y:/Coastal Monitoring Program/Open Data/County Reports/County_Report.
 #              "Pictou", "Richmond", "Shelburne",
 #              "Yarmouth")
 
-county <-  c("Halifax", "Richmond", "Shelburne")
+county <-  c("Pictou")
 
 # SECTION 2: Document History ---------------------------------------------
 
@@ -30,9 +30,11 @@ doc_amendment <- "New data release"
 
 ## Halifax
 hist.Halifax <- data.frame(
-  `Version Number` = c("V1", "V2"),
-  Date = c(d1, doc_date),
-  Amendments = c("New document", "New data release & additional QAQC of previous release"),
+  `Version Number` = c("V1", "V2", "V3"),
+  Date = c(d1, doc_date, as_date("2021-Mar-04")),
+  Amendments = c("New document", 
+                 "New data release & additional QAQC of previous release",
+                 "Update coordinates for Shut-In Island 2018-04-25 deployment"),
   check.names = FALSE
 ) 
 
@@ -129,9 +131,11 @@ DOC.HIST <- list(
 
 sapply(county, function(x) {
   rmarkdown::render(input = report, 
-                    output_file = sprintf("County_Report_%s.docx", x),
+                    output_file = paste0("County_Report_", x, ".docx"),
                     params = list(county = x,
                                   doc.hist = DOC.HIST[[x]]))
 })
+
+
 
 
