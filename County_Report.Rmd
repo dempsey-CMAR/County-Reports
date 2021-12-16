@@ -7,6 +7,8 @@ output:
 params: 
   county: county 
   doc.hist: doc.hist
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -14,6 +16,7 @@ knitr::opts_chunk$set(echo = FALSE, dpi = 600)
 ```
 
 ```{r, echo=FALSE, message=FALSE}
+library(dplyr)
 library(knitr)
 library(lubridate)
 library(purrr)
@@ -21,10 +24,14 @@ library(sf)
 library(ggplot2)
 library(ggsflabel)
 library(ggspatial)
+library(glue)
 library(here)
 library(strings)
-library(dplyr)
 library(viridis)
+
+source(here("functions/import_map_params.R"))
+source(here("functions/subchunkify.R"))
+
 ```
 
  
@@ -40,15 +47,37 @@ waterbodies <-  dat %>% select(WATERBODY) %>% distinct() %>% arrange(WATERBODY)
 waterbodies <- waterbodies$WATERBODY
 
 fig.caption <- " water quality data."
-table.caption <- "Deployment details for "
-
-custom_DO_lims <- c("Aberdeen", "Piper Lake") # stations that have DO below the default range of plot_variables_at_depth
-#qual_depths <- c("Pulp Mill", "Tucker Island") # stations with qualitative depths
+table.caption <- "Deployment details for"
 
 i = 0 # counter for waterbody
 k = 1 # counter for figure number
 text.size <- 3
 crs <- 4326
+
+
+
+# stations that have DO below the default range of plot_variables_at_depth
+custom_DO_lims <- c("Aberdeen", "Piper Lake", "Hourglass Lake", "Sissiboo",
+                    "5008") 
+
+# dissolved oxygen units considerations
+if("mg/L" %in% unique(dat$UNITS)) {
+  
+  dat <- sdat %>%
+    mutate(
+      VARIABLE = case_when(
+        VARIABLE == "Dissolved Oxygen" & UNITS == "percent saturation" ~
+          "Dissolved Oxygen (%)",
+        VARIABLE == "Dissolved Oxygen" & UNITS == "mg/L" ~
+          "Dissolved Oxygen (mg/L)",
+        TRUE ~ VARIABLE
+      )
+    ) 
+
+  DO.mgL <- TRUE
+  
+} else DO.mgL <- FALSE
+
 
 ```
 
@@ -91,10 +120,13 @@ ggplot() +
   annotation_map_tile(type="cartolight", zoomin = 0) +
   geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
   scale_fill_manual(values = c("#1B9E77", NA)) +
-  fixed_plot_aspect(ratio = 2)+
-  theme(text=element_text(size = 12),
-        axis.title = element_blank()) +
-  theme(legend.position = "none")
+  fixed_plot_aspect(ratio = 2) +
+  theme(
+    panel.border = element_rect(colour = "black", fill = NA, size = 1),
+    text = element_text(size = 12),
+    axis.title = element_blank(),
+    legend.position = "none"
+  )
 
 ```
 
@@ -107,39 +139,34 @@ k = k+1
 
 ```{r, couny-map, message=FALSE, error=FALSE, warning=FALSE, fig.width=8}
 
-count.map <- NS %>% filter(COL.COUNTY == 1)
-bb_count <- st_bbox(count.map)
-map_ratio <- 2
+if(county == "Guysborough") text.size <- 2.5 
 
-# tailor the bounding box for each county if required
-if(county == "Guysborough") {
-  bb_count[3] <- -60
-  text.size <- 2.5 
-}
-
-if(county == "Halifax") bb_count[3] <- -62
-
-NS_count <- st_crop(NS, bb_count)
+map_params <- import_map_params(county)
 
 station_map <- ggplot() +
-  geom_sf(data = NS_count, fill= NA) +
-  annotation_map_tile(type="cartolight", zoomin = 0) +
+  geom_sf(data = map_params$dummy_points) +
+  annotation_map_tile(type = "cartolight", zoomin = map_params$zoomin) +
   geom_sf(data = stations) +
-  geom_sf_label_repel(data = stations, aes(label = Station),
-                      label.size = NA,
-                      fill = NA, size = text.size,
-                      max.overlaps = 30) +
+  geom_sf_label_repel(
+    data = stations, aes(label = Station),
+    label.size = NA,
+    fill = NA, size = text.size,
+    max.overlaps = 30
+  ) +
   annotation_scale(location = "br") +
-  annotation_north_arrow(location = "tl", which_north = "true",
-                         height = unit(1, "cm"),
-                         width = unit(1, "cm")) +
-  theme(text=element_text(size=12),
-        axis.title = element_blank())
-
-if(county != "Guysborough") station_map <- station_map + fixed_plot_aspect(ratio = map_ratio)
+  annotation_north_arrow(
+    location = "tl", which_north = "true",
+    height = unit(1, "cm"),
+    width = unit(1, "cm")
+  ) +
+  fixed_plot_aspect(ratio = 2) +
+  theme(
+    panel.border = element_rect(colour = "black", fill = NA, size = 1),
+    text = element_text(size = 12),
+    axis.title = element_blank()
+  )
 
 station_map
-
 
 ```	
 <br>
@@ -160,6 +187,8 @@ CMAR collects temperature, dissolved oxygen, and intermittent salinity data usin
 
 Some data were excluded from the dataset due to quality control processes.
 
+`r if(DO.mgL){"Dissolved oxygen was measured in units of percent saturation or mg/L, depending on the deployment. Measurements in mg/L were corrected for salinity using the Garcia-Gordon (1992) salinity correction factor with a salinity value of 30.6 practical salinity units (based on available data for the region). This correction factor is not required for values recorded in percent saturation."}`
+
 
 ![](Sensor_String.jpg)
 
@@ -169,10 +198,11 @@ Figure `r k`: Example sensor string configuration (not to scale).
 
 # `r county` County Coastal Data
 
-Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. A red line is included in temperature figures to indicate the -0.7° C superchill threshold for salmonids (for figures where the temperature falls below this threshold). Note the different axis scales for each figure.
+Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. The Mooring column indicates whether the string was attached to a fixed mooring (does not move vertically with the tide) or floating mooring (e.g., dock, equipment, buoy). A red line is included in temperature figures to indicate the -0.7 °C superchill threshold for salmonids (for figures where the temperature falls below this threshold). Note the different axis scales for each figure.
 
 
 ```{r, report-body, fig.width = 8.5, fig.height = 5, results = 'hide',  results ='asis', message=FALSE}
+
 for(i in seq_along(waterbodies)){
 
   waterbody_name <- waterbodies[i]
@@ -185,80 +215,64 @@ for(i in seq_along(waterbodies)){
 
   cat('\n')
 
-  table <- write_report_table(waterbody_dat, keep.waterbody = FALSE)
+  # waterbody table
+  table <- write_report_table(
+    waterbody_dat, keep.waterbody = FALSE, keep.units = DO.mgL
+  )
+  
+  print(
+    kable(table, align = "c",
+          caption = glue("Table {i}: {table.caption} {waterbody_name}.")
+    )
+  )
 
-  print(kable(table, align = "c",
-        caption = paste("Table ", i, ": ", table.caption, waterbody_name, ".", sep = "")))
-
-
+  # plot for each station
   for(j in 1:length(stations)){
 
     k = k + 1
     station.j <- stations[j] # station of interest
 
-    cat('\n###', station.j, '\n')
-
     # subset data to station of interest
-    station_dat <- waterbody_dat %>% filter(STATION == station.j)%>%
-      convert_depth_to_ordered_factor() 
+    station_dat <- waterbody_dat %>% 
+      filter(STATION == station.j) %>%
+      convert_depth_to_ordered_factor()
     
-    # order variables to plot alphabetically
-    vars <- station_dat %>%  
-      select(VARIABLE) %>% 
-      distinct() %>% 
-      mutate(VARIABLE = factor(VARIABLE),
-             VARIABLE = ordered(VARIABLE, 
-                                levels = c("Temperature", "Dissolved Oxygen", "Salinity"))) %>% 
-      arrange(VARIABLE)
-    vars <- vars$VARIABLE
-    
-    # set colour palette
-    color_pal <- get_colour_palette(station_dat)
-    
-    # get nice x-axis breaks
-    axis_breaks <- get_xaxis_breaks(station_dat)
-      
     # y-limts for DO
     if(station.j %in% custom_DO_lims){
       standard_lims = FALSE
     } else standard_lims = TRUE
     
-    # legend name
-    if(station.j %in% qual_depths){
-      legend_lab = "Depth"
-    } else legend_lab = "Depth (m)"
+    # height of figure j
+    n.vars <- length(unique(station_dat$VARIABLE))
+    if(n.vars == 1) h = 2.5
+    if(n.vars == 2) h = 5.1
+    if(n.vars == 3) h = 7.6
+    if(n.vars == 4) h = 10.1
     
-    print(
-      plot_variables_at_depth(station_dat,
-                             # plot.title = station.j,
-                              vars.to.plot = vars,
-                              color.palette = color_pal,
-                              
-                              date.breaks.major = axis_breaks$date.breaks.major,
-                              date.breaks.minor = axis_breaks$date.breaks.minor,
-                              date.labels.format = axis_breaks$date.labels.format,
-                              
-                              standard.DO.ylims = standard_lims,
-                              
-                              legend.name = legend_lab)
-    )
+    p <- plot_variables_at_depth(station_dat, standard.DO.ylims = standard_lims)
+    
+    cat('\n###', station.j, '\n')
+     
+    subchunkify(p, fig_height = h, fig_width = 8.5)
+    
     cat(paste("Figure ", k, ": ", station.j, fig.caption,  sep = ""), '\n')
-
+    
     cat('\n')
-
-
   }
 }
 
 ```
+
+`r if(DO.mgL){"# Reference \nGarcia, H. E., and Gordon, L. I. (1992). Oxygen solubility in seawater: better fitting equations. Limnol. Oceanogr. 37, 1307–1312. doi: 10.4319/lo.1992.37.6.1307"}`
 
 # Document History
 
 ```{r}
 i = i +1
 
-kable(params$doc.hist, align = "c",
-         caption = paste("Table ", i, ": Document history.", sep = ""))
+kable(
+  params$doc.hist, align = "ccl", caption = glue("Table {i}: Document history.")
+)
 
 ```
 
