@@ -48,6 +48,82 @@ import_map_params <- function(county, crs = 4326){
     
   } 
   
+  if(county == "Guysborough"){
+    
+    dummy_points <- data.frame(Long = c(-62.71203, -60), Lat = c(44.9, 45.64891 )) %>%
+       st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- -1
+    
+  } 
+  
+  if(county == "Halifax"){
+    
+    dummy_points <- data.frame(Long = c(-64.24, -61.9), Lat = c(44.4, 45.2)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- -1
+    
+  } 
+  
+  if(county == "Inverness"){
+    
+    dummy_points <- data.frame(Long = c(-61.60, -60.56), Lat = c(45.60, 47.04)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- -1
+  } 
+  
+  
+  
+  if(county == "Lunenburg"){
+    
+    dummy_points <- data.frame(Long = c(-64.5, -63.99), Lat = c(44.13, 44.89)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- -1
+  } 
+  
+  if(county == "Pictou"){
+    
+    dummy_points <- data.frame(Long = c(-63.15, -62.09), Lat = c(45.28, 45.83)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- -1
+  } 
+  
+  if(county == "Queens"){
+    
+    dummy_points <- data.frame(Long = c(-65.40, -64.52), Lat = c(43.79, 44.3)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- 0
+  } 
+  
+  if(county == "Richmond"){
+    
+    dummy_points <- data.frame(Long = c(-61.37, -60.4), Lat = c(45.47, 45.7)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- -1
+  } 
+  
+  if(county == "Shelburne"){
+    
+    dummy_points <- data.frame(Long = c(-65.80, -64.92), Lat = c(43.38, 44.23)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- 0
+  } 
+  
+  if(county == "Yarmouth"){
+    
+    dummy_points <- data.frame(Long = c(-66.17, -65.39), Lat = c(43.38, 44)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- -1
+  } 
+  
   
   list(dummy_points = dummy_points, zoomin = zoomin)
   
