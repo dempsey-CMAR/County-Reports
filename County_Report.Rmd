@@ -63,7 +63,7 @@ custom_DO_lims <- c("Aberdeen", "Piper Lake", "Hourglass Lake", "Sissiboo",
 # dissolved oxygen units considerations
 if("mg/L" %in% unique(dat$UNITS)) {
   
-  dat <- sdat %>%
+  dat <- dat %>%
     mutate(
       VARIABLE = case_when(
         VARIABLE == "Dissolved Oxygen" & UNITS == "percent saturation" ~
