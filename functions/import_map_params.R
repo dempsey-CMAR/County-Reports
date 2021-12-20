@@ -50,7 +50,7 @@ import_map_params <- function(county, crs = 4326){
   
   if(county == "Guysborough"){
     
-    dummy_points <- data.frame(Long = c(-62.71203, -60), Lat = c(44.9, 45.64891 )) %>%
+    dummy_points <- data.frame(Long = c(-62.7, -60), Lat = c(44.9, 45.65)) %>%
        st_as_sf(coords = c("Long", "Lat"), crs = crs)
     
     zoomin <- -1
