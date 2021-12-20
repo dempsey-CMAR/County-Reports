@@ -151,7 +151,7 @@ station_map <- ggplot() +
     data = stations, aes(label = Station),
     label.size = NA,
     fill = NA, size = text.size,
-    max.overlaps = 30
+    max.overlaps = 40
   ) +
   annotation_scale(location = "br") +
   annotation_north_arrow(
@@ -216,9 +216,7 @@ for(i in seq_along(waterbodies)){
   cat('\n')
 
   # waterbody table
-  table <- write_report_table(
-    waterbody_dat, keep.waterbody = FALSE, keep.units = DO.mgL
-  )
+  table <- write_report_table(waterbody_dat, keep.waterbody = FALSE)
   
   print(
     kable(table, align = "c",
