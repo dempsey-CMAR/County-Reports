@@ -114,7 +114,7 @@ import_doc_history <- function(county){
  } else hist.Halifax <- NULL
  
 
- if(county == "Lunenburg"){
+ if("Lunenburg" %in% county){
    
    hist.Lunenburg <- tibble(
      `Version Number` = c(
@@ -136,8 +136,8 @@ import_doc_history <- function(county){
  } else hist.Lunenburg <- NULL
 
  
- if(county == "Inverness"){
-   hist.Inverness <- data.frame(
+ if("Inverness" %in% county){
+   hist.Inverness <- tibble(
      `Version Number` = c(
        "V1",
        "V2"
@@ -153,7 +153,7 @@ import_doc_history <- function(county){
    )
  } else hist.Inverness <- NULL
  
- if(county == "Pictou"){
+ if("Pictou" %in% county){
    hist.Pictou <- tibble(
      `Version Number` = c(
        "V1",
@@ -170,7 +170,7 @@ import_doc_history <- function(county){
    )
  } else hist.Pictou <- NULL
  
- if(county == "Queens"){
+ if("Queens" %in% county){
    hist.Queens <- tibble(
      `Version Number` = c(
        "V1"
@@ -184,7 +184,7 @@ import_doc_history <- function(county){
    )
  } else hist.Queens <- NULL
  
- if(county == "Richmond"){
+ if("Richmond" %in% county){
    hist.Richmond <- tibble(
      `Version Number` = c(
        "V1",
@@ -202,7 +202,7 @@ import_doc_history <- function(county){
  } else hist.Richmond <- NULL
   
  
- if(county == "Shelburne"){
+ if("Shelburne" %in% county){
    hist.Shelburne <- tibble(
      `Version Number` = c(
        "V1",
@@ -220,8 +220,8 @@ import_doc_history <- function(county){
  } else hist.Shelburne <- NULL
  
  
- if(county == "Yarmouth"){
-   hist.Yarmouth <- data.frame(
+ if("Yarmouth" %in% county){
+   hist.Yarmouth <- tibble(
      `Version Number` = c(
        "V1",
        "V2"
