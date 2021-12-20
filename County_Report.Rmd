@@ -245,9 +245,9 @@ for(i in seq_along(waterbodies)){
     # height of figure j
     n.vars <- length(unique(station_dat$VARIABLE))
     if(n.vars == 1) h = 2.5
-    if(n.vars == 2) h = 5.1
-    if(n.vars == 3) h = 7.6
-    if(n.vars == 4) h = 10.1
+    if(n.vars == 2) h = 5
+    if(n.vars == 3) h = 7.5
+    if(n.vars == 4) h = 10
     
     p <- plot_variables_at_depth(station_dat, standard.DO.ylims = standard_lims)
     
