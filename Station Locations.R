@@ -28,7 +28,7 @@ counties <- "ALL"
 #             "Yarmouth")
 
 path_submission <- "Y:/Coastal Monitoring Program/Open Data/Submissions"
-path_fig <- "Y:/Coastal Monitoring Program/Open Data/Station Locations"
+# path_fig <- "Y:/Coastal Monitoring Program/Open Data/Station Locations"
 
 # Import county data ------------------------------------------------------
 
@@ -84,10 +84,10 @@ leaflet(data = stations) %>%
 date.today <- Sys.Date()
 write_csv(stations, paste0(path_submission, "/Station_Locations_", date.today, ".csv"))
 
-ggsave(filename = paste0("Station_Locations_", date.today, ".png"),
-       path = path_fig,
-       device = "png",
-       width = 31, height = 18, units = "cm")
+# ggsave(filename = paste0("Station_Locations_", date.today, ".png"),
+#        path = path_fig,
+#        device = "png",
+#        width = 31, height = 18, units = "cm")
 
 write_csv(n_obs,
            file = paste0(path_submission, "/number_rows_", date.today, ".csv"))
