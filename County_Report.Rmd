@@ -54,8 +54,6 @@ k = 1 # counter for figure number
 text.size <- 3
 crs <- 4326
 
-
-
 # stations that have DO below the default range of plot_variables_at_depth
 custom_DO_lims <- c("Aberdeen", "Piper Lake", "Hourglass Lake", "Sissiboo",
                     "5008") 
@@ -201,7 +199,7 @@ Figure `r k`: Example sensor string configuration (not to scale).
 Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. The Mooring column indicates whether the string was attached to a fixed mooring (does not move vertically with the tide) or floating mooring (e.g., dock, equipment, buoy). A red line is included in temperature figures to indicate the -0.7 °C superchill threshold for salmonids (for figures where the temperature falls below this threshold). Note the different axis scales for each figure.
 
 
-```{r, report-body, fig.width = 8.5, fig.height = 5, results = 'hide',  results ='asis', message=FALSE}
+```{r, report-body, fig.width = 8.5, results = 'hide',  results ='asis', message=FALSE}
 
 for(i in seq_along(waterbodies)){
 
