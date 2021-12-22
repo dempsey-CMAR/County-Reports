@@ -1,242 +1,100 @@
+# December 22, 2021
 
+# hist_file: path to the document history file, include file name and extension
+# county: vector of character strings indicating which counties to extract the document history table
 
-import_doc_history <- function(county){
-  
-  amend_2022 <- "New data release. Additional QAQC of previous release. Revised text in Section 1 for clarity."
-  
+import_doc_history <- function(hist_file, county){
   
   if("Annapolis" %in% county){
     
-    hist.Annapolis <- tibble(
-      `Version Number` = c(
-        "V1", 
-        "V2"
-      ),
-      Date = c(
-        "2021-01-06", 
-        "2022-01-06"
-      ),
-      Amendments = c(
-        "New document", 
-        amend_2022
-      ) 
-    )
+    hist.Annapolis <- read_excel(hist_file, sheet = "Annapolis")
+    
   } else hist.Annapolis  <- NULL
   
   
   if("Antigonish" %in% county){
-
-    hist.Antigonish <- tibble(
-      `Version Number` = c("V1"),
-      Date = c("2022-01-06"),
-      Amendments = c(
-        "New document"
-      )
-    ) 
+    
+    hist.Antigonish <- read_excel(hist_file, sheet = "Antigonish")
+    
   } else hist.Antigonish  <- NULL
+  
   
   if("Colchester" %in% county){
     
-    hist.Colchester <- tibble(
-      `Version Number` = c("V1"),
-      Date = c("2022-01-06"),
-      Amendments = c(
-        "New document"
-      )
-    ) 
+    hist.Colchester <-  read_excel(hist_file, sheet = "Colchester")
+    
   } else hist.Colchester  <- NULL
+  
   
   if("Digby" %in% county){
     
-    hist.Digby <- tibble(
-      `Version Number` = c(
-        "V1", 
-        "V2"
-      ),
-      Date = c(
-        "2021-01-26", 
-        "2021-01-06"
-      ),
-      Amendments = c(
-        "New document", 
-        amend_2022
-      )
-    )
+    hist.Digby <-  read_excel(hist_file, sheet = "Digby")
+    
   } else hist.Digby  <- NULL
   
   
   if("Guysborough" %in% county){
     
-    hist.Guysborough <- tibble(
-      `Version Number` = c(
-        "V1", 
-        "V2", 
-        "V3"
-      ),
-      Date = c(
-        "2021-10-14", 
-        "2021-01-26", 
-        "2022-01-06"
-      ),
-      Amendments = c(
-        "New document", 
-        "New data release & additional QAQC of previous release",
-        amend_2022
-      )
-    )
+    hist.Guysborough <-  read_excel(hist_file, sheet = "Guysborough")
+    
   } else hist.Guysborough  <- NULL
   
   
+  if("Halifax" %in% county){
+    
+    hist.Halifax <-  read_excel(hist_file, sheet = "Halifax")
+    
+  } else hist.Halifax <- NULL
   
- if("Halifax" %in% county){
-   
-   hist.Halifax <- tibble(
-     `Version Number` = c(
-       "V1", 
-       "V2", 
-       "V3",
-       "V4"
-     ),
-     Date = c(
-       "2020-10-14",
-       "2021-01-26",
-       "2021-03-04",
-       "2022-01-06"
-     ),
-     Amendments = c(
-       "New document",
-       "New data release & additional QAQC of previous release",
-       "Update coordinates for Shut-In Island 2018-04-25 deployment",
-       amend_2022
-       
-     ),
-   )
- } else hist.Halifax <- NULL
- 
-
- if("Lunenburg" %in% county){
-   
-   hist.Lunenburg <- tibble(
-     `Version Number` = c(
-       "V1", 
-       "V2",
-       "V3"
-     ),
-     Date = c(
-       "2020-10-14",
-       "2021-01-26",
-       "2022-01-06"
-     ),
-     Amendments = c(
-       "New document", 
-       "New data release",
-       amend_2022
-     )
-   )
- } else hist.Lunenburg <- NULL
-
- 
- if("Inverness" %in% county){
-   hist.Inverness <- tibble(
-     `Version Number` = c(
-       "V1",
-       "V2"
-     ),
-     Date = c(
-       "2021-01-26",
-       "2022-01-06"
-     ),
-     Amendments = c(
-       "New document",
-       "Revised text in Section 1 for clarity. Estimated quantitative depths for Pulp Mill deployment."
-       )
-   )
- } else hist.Inverness <- NULL
- 
- if("Pictou" %in% county){
-   hist.Pictou <- tibble(
-     `Version Number` = c(
-       "V1",
-       "V2"
-     ),
-     Date = c(
-       "2021-01-26",
-       "2022-01-06"
-     ),
-     Amendments = c(
-       "New document",
-       amend_2022
-     )
-   )
- } else hist.Pictou <- NULL
- 
- if("Queens" %in% county){
-   hist.Queens <- tibble(
-     `Version Number` = c(
-       "V1"
-     ),
-     Date = c(
-       "2022-01-06"
-     ),
-     Amendments = c(
-       "New document"
-     )
-   )
- } else hist.Queens <- NULL
- 
- if("Richmond" %in% county){
-   hist.Richmond <- tibble(
-     `Version Number` = c(
-       "V1",
-       "V2"
-     ),
-     Date = c(
-       "2021-01-26",
-       "2022-01-06"
-     ),
-     Amendments = c(
-       "New document",
-       "Revised text in Section 1 for clarity. Estimated quantitative depths for 0667 deployment."
-     )
-   )
- } else hist.Richmond <- NULL
   
- 
- if("Shelburne" %in% county){
-   hist.Shelburne <- tibble(
-     `Version Number` = c(
-       "V1",
-       "V2"
-     ),
-     Date = c(
-       "2021-01-26",
-       "2022-01-06"
-     ),
-     Amendments = c(
-       "New document",
-       "Revised text in Section 1 for clarity. Corrected waterbody for Taylors Rock."
-     )
-   )
- } else hist.Shelburne <- NULL
- 
- 
- if("Yarmouth" %in% county){
-   hist.Yarmouth <- tibble(
-     `Version Number` = c(
-       "V1",
-       "V2"
-     ),
-     Date = c(
-       "2021-01-26",
-       "2022-01-06"
-     ),
-     Amendments = c(
-       "New document",
-       amend_2022
-     )
-   )
- } else hist.Yarmouth <- NULL
- 
+  if("Lunenburg" %in% county){
+    
+    hist.Lunenburg <- read_excel(hist_file, sheet = "Lunenburg")
+    
+  } else hist.Lunenburg <- NULL
+  
+  
+  if("Inverness" %in% county){
+    
+    hist.Inverness <-  read_excel(hist_file, sheet = "Inverness")
+    
+  } else hist.Inverness <- NULL
+  
+  
+  if("Pictou" %in% county){
+    
+    hist.Pictou <-  read_excel(hist_file, sheet = "Pictou")
+    
+  } else hist.Pictou <- NULL
+  
+  
+  if("Queens" %in% county){
+    
+    hist.Queens <-  read_excel(hist_file, sheet = "Queens")
+    
+  } else hist.Queens <- NULL
+  
+  
+  if("Richmond" %in% county){
+    
+    hist.Richmond <-  read_excel(hist_file, sheet = "Richmond")
+    
+  } else hist.Richmond <- NULL
+  
+  
+  if("Shelburne" %in% county){
+    
+    hist.Shelburne <-  read_excel(hist_file, sheet = "Shelburne")
+    
+  } else hist.Shelburne <- NULL
+  
+  
+  if("Yarmouth" %in% county){
+    
+    hist.Yarmouth <-  read_excel(hist_file, sheet = "Yarmouth")
+    
+  } else hist.Yarmouth <- NULL
+  
   # Document history for each county
   list(
     Annapolis = hist.Annapolis,
