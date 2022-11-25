@@ -15,17 +15,17 @@ editor_options:
 knitr::opts_chunk$set(echo = FALSE, dpi = 600)
 ```
 
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(dplyr)
-library(knitr)
-library(lubridate)
-library(purrr)
-library(sf)
 library(ggplot2)
 library(ggsflabel)
 library(ggspatial)
 library(glue)
 library(here)
+library(knitr)
+library(lubridate)
+library(purrr)
+library(sf)
 library(strings)
 library(viridis)
 
@@ -102,7 +102,7 @@ stations <- dat %>%
 
 ```
 
-
+\newpage
 # Introduction
 
 The Centre for Marine Applied Research (CMAR) measures [essential ocean variables](https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441) throughout Nova Scotia’s coastal waters as part of the Coastal Monitoring Program. This program was initiated by the Nova Scotia Department of Fisheries and Aquaculture in 2012 and CMAR became involved in 2017. For more information on CMAR and the Coastal Monitoring Program, visit the [CMAR website](https://cmar.ca/). 
@@ -131,7 +131,7 @@ ggplot() +
 Figure `r k`: `r county` County (green).
 
 ```{r,  message=FALSE, error=FALSE}
-k = k+1
+k = k + 1
 ```
 
 
@@ -176,7 +176,7 @@ Figure `r k`: Sampling stations in `r county` County.
 k = k+1
 ```
 
-
+\newpage
 ## Data Collection 
 
 CMAR collects temperature, dissolved oxygen, and intermittent salinity data using autonomous sensors deployed on “sensor strings”. A sensor string typically consists of a line anchored to the sea floor by an acoustic release and suspended by a sub-surface buoy, with sensors attached at various depths below the surface (as measured at low tide; Figure 3). Alternatively, strings may be attached to surface moorings, including floating docks, buoys, and equipment. Sensor strings are typically deployed for several months, and data are measured every 1 minute to 1 hour. Sensors are retrieved for data offload by triggering the acoustic release when applicable, by directly removing from surface moorings, or occasionally by divers or dragging. Sensor strings may be re-deployed at the same location or moved to another area of interest depending on program objectives.
@@ -187,13 +187,15 @@ Some data were excluded from the dataset due to quality control processes.
 
 `r if(DO.mgL){"Dissolved oxygen was measured in units of percent saturation or mg/L, depending on the deployment. Measurements in mg/L were corrected for salinity using the Garcia-Gordon (1992) salinity correction factor with a salinity value of 30.6 practical salinity units (based on available data for the region). This correction factor is not required for values recorded in percent saturation."}`
 
+```{r, echo=FALSE, fig.align='center'}
 
-![](Sensor_String.jpg)
+knitr::include_graphics("sensor_string.png")
 
+```
 
 Figure `r k`: Example sensor string configuration (not to scale).
 
-
+\newpage
 # `r county` County Coastal Data
 
 Coastal data is presented by waterbody. For each waterbody, there is a table of deployment details followed by figures showing the data at each station. The Mooring column indicates whether the string was attached to a fixed mooring (does not move vertically with the tide) or floating mooring (e.g., dock, equipment, buoy). A red line is included in temperature figures to indicate the -0.7 °C superchill threshold for salmonids (for figures where the temperature falls below this threshold). Note the different axis scales for each figure.
@@ -261,6 +263,7 @@ for(i in seq_along(waterbodies)){
 
 `r if(DO.mgL){"# Reference \nGarcia, H. E., and Gordon, L. I. (1992). Oxygen solubility in seawater: better fitting equations. Limnol. Oceanogr. 37, 1307–1312. doi: 10.4319/lo.1992.37.6.1307"}`
 
+\newpage
 # Document History
 
 ```{r}
