@@ -1,4 +1,4 @@
-# February 4, 2021
+# Decmber 5, 2022
 
 # This script looks at all of the data submitted to Open Data Portal and:
 ## makes a table with the number of observations for each county (useful as a check to make sure Open Data 
@@ -13,6 +13,7 @@ library(readr)
 library(ggplot2)
 library(ggspatial)
 library(ggsflabel)
+library(htmlwidgets)
 library(leaflet)
 library(openxlsx)
 library(purrr)
@@ -34,10 +35,10 @@ path_submission <- "Y:/Coastal Monitoring Program/Open Data/Submissions"
 
 DATA <- import_strings_data()
 
-# check if there are any longitudes missing the "-"
-check <- DATA %>% 
-  filter(LONGITUDE > 0) %>% 
-  distinct(STATION, .keep_all = TRUE)     
+# # check if there are any longitudes missing the "-"
+# check <- DATA %>% 
+#   filter(LONGITUDE > 0) %>% 
+#   distinct(STATION, .keep_all = TRUE)     
 
 # count the number of rows for each county (send to Open Data so they can check)
 n_obs <- DATA %>% 
@@ -74,15 +75,20 @@ stations <- DATA %>%
 
 
 # leaflet plot ------------------------------------------------------------
-leaflet(data = stations) %>%
+m <- leaflet(data = stations) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addCircleMarkers(~LONGITUDE, ~LATITUDE, popup =  ~ STATION,
                    radius = 4, fillOpacity = 1, stroke = FALSE)  
 
+saveWidget(m, file="m.html")
+
 # EXPORT ------------------------------------------------------------------
 
 date.today <- Sys.Date()
-write_csv(stations, paste0(path_submission, "/Station_Locations_", date.today, ".csv"))
+write_csv(
+  stations, paste0(path_submission, "/Station_Locations_", date.today, ".csv"
+  )
+)
 
 # ggsave(filename = paste0("Station_Locations_", date.today, ".png"),
 #        path = path_fig,

@@ -28,6 +28,16 @@ import_map_params <- function(county, crs = 4326){
     
   } 
   
+  
+  if(county == "Cape Breton"){
+
+    dummy_points <- data.frame(Long = c(-60.6,  -59.8), Lat = c(45.95, 46.35)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- 0
+    
+  } 
+  
   if(county == "Colchester"){
     
     # dummy_points <- data.frame(Long = c(-63.6, -62.8), Lat = c(45.3, 45.9)) %>%
@@ -68,13 +78,12 @@ import_map_params <- function(county, crs = 4326){
   
   if(county == "Inverness"){
     
-    dummy_points <- data.frame(Long = c(-61.60, -60.56), Lat = c(45.60, 47.04)) %>%
+    dummy_points <- data.frame(Long = c(-61.60, -60.56), Lat = c(45.60, 46.2)) %>%
       st_as_sf(coords = c("Long", "Lat"), crs = crs)
     
     zoomin <- -1
   } 
-  
-  
+
   
   if(county == "Lunenburg"){
     
@@ -115,6 +124,16 @@ import_map_params <- function(county, crs = 4326){
     
     zoomin <- 0
   } 
+  
+  if(county == "Victoria"){
+    
+    dummy_points <- data.frame(Long = c(-61, -60), Lat = c(45.7, 47)) %>%
+      st_as_sf(coords = c("Long", "Lat"), crs = crs)
+    
+    zoomin <- -1
+  } 
+  
+  
   
   if(county == "Yarmouth"){
     

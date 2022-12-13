@@ -18,6 +18,11 @@ import_doc_history <- function(hist_file, county){
     
   } else hist.Antigonish  <- NULL
   
+  if("Cape Breton" %in% county){
+    
+    hist.CapeBreton <- read_excel(hist_file, sheet = "Cape Breton")
+    
+  } else hist.CapeBreton  <- NULL
   
   if("Colchester" %in% county){
     
@@ -89,6 +94,13 @@ import_doc_history <- function(hist_file, county){
   } else hist.Shelburne <- NULL
   
   
+  if("Victoria" %in% county){
+    
+    hist.Victoria <-  read_excel(hist_file, sheet = "Victoria")
+    
+  } else hist.Victoria <- NULL
+  
+  
   if("Yarmouth" %in% county){
     
     hist.Yarmouth <-  read_excel(hist_file, sheet = "Yarmouth")
@@ -99,6 +111,7 @@ import_doc_history <- function(hist_file, county){
   list(
     Annapolis = hist.Annapolis,
     Antigonish = hist.Antigonish,
+    `Cape Breton` = hist.CapeBreton,
     Colchester = hist.Colchester,
     Digby = hist.Digby,
     Guysborough = hist.Guysborough,
@@ -109,6 +122,7 @@ import_doc_history <- function(hist_file, county){
     Queens = hist.Queens,
     Richmond = hist.Richmond,
     Shelburne = hist.Shelburne,
+    Victoria = hist.Victoria,
     Yarmouth = hist.Yarmouth
   )
   

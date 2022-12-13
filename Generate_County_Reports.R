@@ -10,7 +10,7 @@ library(dplyr)
 library(here)
 library(readxl)
 
-source(here("functions/import_doc_historyv2.R"))
+source(here("functions/import_doc_history.R"))
 
 
 # SECTION 1: Specify counties ---------------------------------------------
@@ -22,12 +22,11 @@ report <- here("County_Report.Rmd")
 #              "Halifax", "Inverness", "Lunenburg", "Pictou", "Queens",
 #              "Richmond", "Shelburne", "Yarmouth")
 
-county <- "Pictou"
+county <-  c("Inverness")
 
 
 DOC.HIST <- import_doc_history(doc_history, county)
 
-library(readxl)
 
 # SECTION 3: GENERATE REPORTS --------------------------------------------------------
 

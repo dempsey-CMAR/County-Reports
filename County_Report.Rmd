@@ -55,8 +55,18 @@ text.size <- 3
 crs <- 4326
 
 # stations that have DO below the default range of plot_variables_at_depth
-custom_DO_lims <- c("Aberdeen", "Piper Lake", "Hourglass Lake", "Sissiboo",
-                    "5008") 
+custom_DO_lims <- c(
+  "0814x East",
+  "0814x West",
+  "5008",
+  "Aberdeen", 
+  "Deep Basin",
+  "Hourglass Lake",
+  "Monks Head",
+  "Piper Lake", 
+  "Sissiboo",
+  "Tickle Island"
+) 
 
 # dissolved oxygen units considerations
 if("mg/L" %in% unique(dat$UNITS)) {
@@ -137,7 +147,7 @@ k = k + 1
 
 ```{r, couny-map, message=FALSE, error=FALSE, warning=FALSE, fig.width=8}
 
-if(county == "Guysborough") text.size <- 2.5 
+if(county == "Guysborough") text.size <- 2.5
 
 map_params <- import_map_params(county)
 
