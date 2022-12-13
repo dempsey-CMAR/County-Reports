@@ -1,41 +1,38 @@
-# This script generates county reports for all counties specified in the <<county>> variable
+# This script generates county reports for all counties specified in << county >> 
 
-# SECTION 1: Specify counties for which to generate report
+# SECTION 1: Read in document history and report files
 
-# SECTION 2: Specify the document history for each county
+# SECTION 2: Specify county(ies) for which to generate reports
 
-# SECTION 3: Generate report(s)
+# SECTION 2: Generate report(s)
+
+# SECTION 1: SET UP ---------------------------------------------
 
 library(dplyr)
 library(here)
 library(readxl)
 
-source(here("functions/import_doc_history.R"))
+doc_history <- read_excel(
+  "Y:/coastal_monitoring_program/tracking_sheets/water_quality_report_tracker.xlsx",
+  sheet = "Tracking"
+)
 
-
-# SECTION 1: Specify counties ---------------------------------------------
-
-doc_history <- here("document_history.xlsx")
 report <- here("County_Report.Rmd")
 
-# county <-  c("Annapolis", "Colchester", "Digby", "Guysborough",
-#              "Halifax", "Inverness", "Lunenburg", "Pictou", "Queens",
-#              "Richmond", "Shelburne", "Yarmouth")
+
+# SECTION 1: SET UP ---------------------------------------------
 
 county <-  c("Inverness")
 
 
-DOC.HIST <- import_doc_history(doc_history, county)
-
-
-# SECTION 3: GENERATE REPORTS --------------------------------------------------------
+# SECTION 2: GENERATE REPORTS --------------------------------------------------------
 
 sapply(county, function(x) { 
   
   rmarkdown::render(
     input = report, 
     output_file = paste0("County_Report_", x, ".docx"),
-    params = list(county = x, doc.hist = DOC.HIST[[x]]))
+    params = list(county = x, doc.hist = filter(doc_history, County == x)))
   
 })
 

@@ -279,9 +279,11 @@ for(i in seq_along(waterbodies)){
 ```{r}
 i = i +1
 
-kable(
-  params$doc.hist, align = "ccl", caption = glue("Table {i}: Document history.")
-)
+params$doc.hist %>% 
+  select(-County) %>% 
+  kable(
+    align = "ccl", caption = glue("Table {i}: Document history.")
+  )
 
 ```
 
